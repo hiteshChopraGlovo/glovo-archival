@@ -1,9 +1,9 @@
 package com.glovoapp.archival.read;
 
-import java.util.Map;
+import java.util.List;
 
 public interface InputConnector {
 
-  Map<String, String> read();
+  List<List<Object>> read();
 
 }
