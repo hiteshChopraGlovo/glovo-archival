@@ -1,5 +1,8 @@
 package com.glovoapp.archival.config;
 
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.vertx.core.Vertx;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
@@ -35,5 +38,14 @@ public class BeanConfig {
             .setMaxSize(16)
             .setName("pool-name")
     );
+  }
+
+  @Bean
+  public AmazonS3 s3() {
+    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+
+    return builder
+            .withRegion(Regions.EU_WEST_1)
+            .build();
   }
 }
