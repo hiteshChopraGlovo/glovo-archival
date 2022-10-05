@@ -1,5 +1,7 @@
 package com.glovoapp.archival.config;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class BeanConfig {
-
   @Bean
   public Vertx vertx() {
     return Vertx.vertx();
@@ -42,10 +43,9 @@ public class BeanConfig {
 
   @Bean
   public AmazonS3 s3() {
-    AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-
-    return builder
-            .withRegion(Regions.EU_WEST_1)
-            .build();
+    return AmazonS3ClientBuilder.standard()
+        .withEndpointConfiguration(new EndpointConfiguration("http://localhost:4577/", "eu-west-1"))
+        .withPathStyleAccessEnabled(true)
+        .build();
   }
 }
