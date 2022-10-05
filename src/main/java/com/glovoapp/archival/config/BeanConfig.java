@@ -5,21 +5,27 @@ import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class BeanConfig {
 
-  private final Vertx vertx;
+  @Bean
+  public Vertx vertx() {
+    return Vertx.vertx();
+  }
 
-  public JDBCPool jdbcPool() {
+  @Bean
+  public JDBCPool jdbcPool(@Autowired Vertx vertx) {
     return JDBCPool.pool(
         vertx,
         // configure the connection
         new JDBCConnectOptions()
-            // H2 connection string
-            .setJdbcUrl("jdbc:mysql://localhost:3306/courier-onboarding?useUnicode=true&characterEncoding=UTF-8")
+            // JDBC connection string
+            .setJdbcUrl("jdbc:mysql://localhost:3506/courier-onboarding?useUnicode=true&characterEncoding=UTF-8")
             // username
             .setUser("courier-onboarding-user")
             // password

@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface InputConnector {
 
-  List<List<Object>> read();
+  String read();
 
 }
