@@ -1,12 +1,11 @@
 package com.glovoapp.archival.read;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,18 +19,35 @@ public class MysqlInputConnector implements InputConnector {
 
   @SneakyThrows
   @Override
-  public String read() {
-    List<JsonObject> records = new ArrayList<>();
+  public Map<String, List<JsonObject>> read() {
+    Map<String, List<JsonObject>> recordsMap = new HashMap<>();
     return pool
-        .query("SELECT * FROM referral_delivered_orders")
+        .query("SELECT *,DATE_FORMAT(creation_time, '%Y-%m-%d') AS TEMP_DATE FROM referral_delivered_orders where creation_time < DATE_SUB(now(), INTERVAL 6 MONTH)")
         .execute()
         .toCompletionStage()
         .thenAccept(rows -> {
               for (Row row : rows) {
-                records.add(row.toJson());
+                JsonObject rowJsonObject = row.toJson();
+                String date = rowJsonObject.getString("TEMP_DATE");
+                rowJsonObject.remove("TEMP_DATE");
+                if(!recordsMap.containsKey(date)) {
+                  recordsMap.put(date, new ArrayList<>());
+                }
+                recordsMap.get(date).add(rowJsonObject);
               }
             })
-        .thenApply(rowsList -> records.toString())
+        .thenApply(map -> recordsMap)
+        .toCompletableFuture()
+        .get(1, TimeUnit.HOURS);
+  }
+
+  @SneakyThrows
+  @Override
+  public void deleteArchivedData() {
+     pool
+        .query("DELETE from referral_delivered_orders where creation_time < DATE_SUB(now(), INTERVAL 6 MONTH)")
+        .execute()
+        .toCompletionStage()
         .toCompletableFuture()
         .get(1, TimeUnit.HOURS);
   }
